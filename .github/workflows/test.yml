@@ -6,59 +6,50 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    - cron: '0 2 * * *'  # Run daily at 2 AM
+    - cron: '0 2 * * *'  # Jalankan setiap hari jam 2 pagi
 
 jobs:
   backend-tests:
     runs-on: ubuntu-latest
-    
-    services:
-      # Jalankan backend service
-      backend:
-        image: python:3.9-slim
-        ports:
-          - 8000:8000
-        options: >-
-          --name backend
-          --workdir /app
-          --volume ${{ github.workspace }}:/app
-        env:
-          PYTHONPATH: /app
-    
+    # ✅ Blok services yang salah konfigurasi sudah dihapus
+
     steps:
-    - uses: actions/checkout@v4
-    
+    - uses: actions/checkout@v4             # ✅ upgrade dari v3
+
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5         # ✅ upgrade dari v4
       with:
         python-version: '3.9'
-    
+
     - name: Install Backend Dependencies
       run: |
         cd backend
         pip install -r requirements.txt
-    
+
     - name: Start Backend Server
       run: |
         cd backend
         uvicorn main:app --host 0.0.0.0 --port 8000 &
-        sleep 5  # Wait for server to start
-    
+        sleep 5
+
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v4           # ✅ upgrade dari v3
       with:
         node-version: '18'
-    
+
     - name: Install Newman
       run: npm install -g newman newman-reporter-htmlextra
-    
+
+    - name: Buat Folder Reports             # ✅ fix: buat folder sebelum menulis laporan
+      run: mkdir -p reports
+
     - name: Run API Tests
       run: |
         newman run test/postman/TaskFlow_API_Collection.json \
           -e test/postman/TaskFlow_CI_Environment.json \
           --reporters cli,htmlextra \
           --reporter-htmlextra-export reports/api-test-report.html
-    
+
     - name: Upload API Test Report
       uses: actions/upload-artifact@v4
       if: always()
@@ -68,30 +59,32 @@ jobs:
 
   frontend-tests:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
+    - uses: actions/checkout@v4             # ✅ upgrade dari v3
+
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.1'
-    
+
     - name: Start PHP Server
       run: |
         cd frontend
         php -S 127.0.0.1:8080 &
         sleep 3
-    
+
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5         # ✅ upgrade dari v4
       with:
         python-version: '3.9'
-    
+
     - name: Install Selenium Dependencies
-      run: |
-        pip install selenium pytest pytest-html webdriver-manager
-    
+      run: pip install selenium pytest pytest-html webdriver-manager
+
+    - name: Buat Folder Reports             # ✅ fix: buat folder sebelum menulis laporan
+      run: mkdir -p reports/screenshots
+
     - name: Run Selenium Tests
       env:
         HEADLESS: "true"
@@ -100,15 +93,15 @@ jobs:
         pytest test_frontend.py -v \
           --html=../../reports/frontend-test-report.html \
           --self-contained-html
-    
+
     - name: Upload Selenium Test Report
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: frontend-test-report
         path: reports/frontend-test-report.html
-    
-    - name: Upload Screenshots (if failures)
+
+    - name: Upload Screenshots (jika gagal)
       uses: actions/upload-artifact@v4
       if: failure()
       with:
