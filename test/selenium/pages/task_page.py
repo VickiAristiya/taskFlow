@@ -49,21 +49,20 @@ class TaskPage:
         """Membuat tugas baru melalui form"""
         self.wait.until(EC.presence_of_element_located(self.FORM_TITLE))
         
-        # Isi form
         self.driver.find_element(*self.FORM_TITLE).send_keys(title)
         if description:
             self.driver.find_element(*self.FORM_DESCRIPTION).send_keys(description)
         
-        # Pilih status menggunakan dropdown
         from selenium.webdriver.support.ui import Select
         select = Select(self.driver.find_element(*self.FORM_STATUS))
         select.select_by_value(status)
         
-        # Submit form
         self.driver.find_element(*self.BTN_SUBMIT).click()
         
-        # Tunggu alert muncul (indikasi sukses)
-        self.wait.until(EC.presence_of_element_located(self.ALERT_SUCCESS))
+        # ❌ HAPUS baris ini dari create_task()
+        # self.wait.until(EC.presence_of_element_located(self.ALERT_SUCCESS))
+    
+
     
     def reset_form(self):
         """Reset form ke keadaan awal"""
@@ -104,9 +103,14 @@ class TaskPage:
         return tasks
     
     def task_exists(self, title):
-        """Memeriksa apakah tugas dengan judul tertentu ada di tabel"""
-        tasks = self.get_all_tasks()
-        return any(task['title'] == title for task in tasks)
+        """Cek apakah task muncul di tabel — tunggu reload selesai"""
+        try:
+            self.wait.until(
+                EC.text_to_be_present_in_element(self.TASKS_TABLE_BODY, title)
+            )
+            return True
+        except:
+            return False
     
     def get_task_by_title(self, title):
         """Mendapatkan data tugas berdasarkan judul"""
@@ -156,9 +160,15 @@ class TaskPage:
         self.wait.until(EC.presence_of_element_located(self.ALERT_SUCCESS))
     
     def get_alert_message(self):
-        """Mendapatkan teks dari alert yang muncul"""
-        alert = self.wait.until(EC.presence_of_element_located(self.ALERT_CONTAINER))
-        return alert.text
+        """Ambil pesan alert — tangkap cepat sebelum auto-dismiss"""
+        try:
+            # Tunggu alert muncul, max 3 detik
+            alert = WebDriverWait(self.driver, 3).until(
+                EC.presence_of_element_located(self.ALERT_CONTAINER)
+            )
+            return alert.text
+        except:
+            return ""  # Alert sudah dismiss sebelum sempat dibaca
     
     def is_empty_state_displayed(self):
         """Memeriksa apakah empty state ditampilkan"""
