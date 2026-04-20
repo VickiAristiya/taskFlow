@@ -119,12 +119,12 @@ jobs:
       run: mkdir -p reports/screenshots
 
     - name: Debug Koneksi Frontend ke Backend   # ✅ tambah sementara untuk diagnosis
-        run: |
-            echo "=== Test curl ke backend ==="
-            curl -s http://127.0.0.1:8000/api/tasks | head -c 200
-            echo ""
-            echo "=== URL backend di kode frontend ==="
-            grep -rn "8000\|localhost\|127.0.0.1\|api" frontend/ --include="*.php" --include="*.js" | head -30
+      run: |
+        echo "=== Test curl ke backend ==="
+        curl -s http://127.0.0.1:8000/api/tasks | head -c 200
+        echo ""
+        echo "=== URL backend di kode frontend ==="
+        grep -rn "8000\|localhost\|127.0.0.1\|api" frontend/ --include="*.php" --include="*.js" | head -30
 
 
     - name: Run Selenium Tests
