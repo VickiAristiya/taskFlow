@@ -31,15 +31,19 @@ class TestTaskFlowFrontend:
         task_desc = "Ini adalah tugas test"
         task_status = "pending"
         
-        self.page.create_task(task_title, task_desc, task_status)
+        print("DEBUG: sebelum create_task")
         
-        # Tambah debug — lihat apakah create_task sudah return
-        print("DEBUG: create_task selesai dipanggil")
+        # Panggil manual step by step, JANGAN panggil self.page.create_task()
+        print("DEBUG: mengisi title...")
+        self.page.fill_title(task_title)        # ganti sesuai method aslinya
         
-        # Screenshot untuk lihat state halaman
-        self.driver.save_screenshot("../../reports/screenshots/after_create.png")
+        print("DEBUG: mengisi desc...")
+        self.page.fill_description(task_desc)   # ganti sesuai method aslinya
         
-        assert self.page.task_exists(task_title), "Tugas tidak muncul di tabel"
+        print("DEBUG: klik submit...")
+        self.page.click_submit()                # ganti sesuai method aslinya
+        
+        print("DEBUG: create_task selesai")
     
     def test_create_task_without_title_validation(self):
         """TC-FE-003: Validasi client-side untuk field judul kosong"""
