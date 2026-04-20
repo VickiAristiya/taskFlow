@@ -31,19 +31,14 @@ class TestTaskFlowFrontend:
         task_desc = "Ini adalah tugas test"
         task_status = "pending"
         
-        print("DEBUG: sebelum create_task")
+        self.page.create_task(task_title, task_desc, task_status)
         
-        # Panggil manual step by step, JANGAN panggil self.page.create_task()
-        print("DEBUG: mengisi title...")
-        self.page.fill_title(task_title)        # ganti sesuai method aslinya
+        # ✅ Tangkap alert SEGERA setelah submit, sebelum auto-dismiss
+        alert_msg = self.page.get_alert_message()
         
-        print("DEBUG: mengisi desc...")
-        self.page.fill_description(task_desc)   # ganti sesuai method aslinya
-        
-        print("DEBUG: klik submit...")
-        self.page.click_submit()                # ganti sesuai method aslinya
-        
-        print("DEBUG: create_task selesai")
+        # ✅ Baru cek tabel (boleh lebih lambat)
+        assert self.page.task_exists(task_title), "Tugas tidak muncul di tabel"
+        assert "berhasil ditambahkan" in alert_msg, f"Alert tidak sesuai: '{alert_msg}'"
     
     def test_create_task_without_title_validation(self):
         """TC-FE-003: Validasi client-side untuk field judul kosong"""
